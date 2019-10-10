@@ -51,6 +51,7 @@ std::string BAD_NL_STR =
 %x comment
 %x mlcomment
 %x QQQ
+%x qqq
 
 %%
 
@@ -62,6 +63,9 @@ std::string BAD_NL_STR =
 ==    { return parser::token::EQUALS; }
 [<]=  { return parser::token::ATMOST; }
 [>]=  { return parser::token::ATLEAST; }
+&&    { return parser::token::AND; }
+\|\|    { return parser::token::OR; }
+!     { return parser::token::NOT; }
 
    /* Single character punctuation.  Because a character
     * in C or C++ can be treated as an integer, Bison lets
@@ -69,7 +73,7 @@ std::string BAD_NL_STR =
     * JFlex/Cup do not let you do this in Java.
     * Here are a few ... there are more. 
     */
-[-+*/]  { return text()[0]; }
+[-+*/(){}:;=.<>]  { return text()[0]; }
 
   /* Keywords are essentially another kind of punctuation,
    * but since they also match the identifier pattern, we
@@ -80,8 +84,16 @@ std::string BAD_NL_STR =
    * Here are a couple of examples. 
    */
 
-class  { return parser::token::CLASS; }
-def    { return parser::token::DEF; }
+class   { return parser::token::CLASS; }
+def     { return parser::token::DEF; }
+extends	{ return parser::token::EXTENDS; }
+if	{ return parser::token::IF; }
+elif	{ return parser::token::ELIF; }
+else	{ return parser::token::ELSE; }
+while	{ return parser::token::WHILE; }
+return	{ return parser::token::RETURN; }
+typecase { return parser::token::TYPECASE; }
+
 
 
    /* The following tokens are value-bearing:
@@ -110,11 +122,25 @@ def    { return parser::token::DEF; }
 [ \t\n]*  { ; }
 
    /* Multi-line comments */ 
-[/][*]  { start(comment); }
-<comment>[^*]*   { ; }
-<comment>[*][^/] { ; }
-<comment>[*][/]  { start(INITIAL); }
+[/][*]  { start(mlcomment); }
+<mlcomment>[^*]*   { ; }
+<mlcomment>[*][^/] { ; }
+<mlcomment>[*][/]  { start(INITIAL); }
+  
+ /* Single-line comments */
+[//] { start(comment); }
+<comment>[\n] {start(INITIAL); }
 
+   /* Triple quoted comments */
+["""] { start(QQQ); }
+<QQQ>["""] { start(INITIAL); }
+['''] { start(qqq); }
+<qqq>['''] {start(INITIAL); }
+
+   /* Identifiers */
+[a-zA-Z]+[a-zA-Z0-9]* { return parser::token::IDENT; }
+
+   /* Non-Identifier, punctuation, or numeric character */
 .  {   report::error("Unexpected character '" + std::string(text()) + "'" +
        " at line " + std::to_string(lineno()) +
        ", column " + std::to_string(columno()));
