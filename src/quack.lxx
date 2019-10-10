@@ -49,6 +49,8 @@ std::string BAD_NL_STR =
    * how to declare an exclusive scanner state. 
    */ 
 %x comment
+%x mlcomment
+%x QQQ
 
 %%
 
@@ -59,7 +61,7 @@ std::string BAD_NL_STR =
   /* Multi-character punctuation with names */
 ==    { return parser::token::EQUALS; }
 [<]=  { return parser::token::ATMOST; }
-
+[>]=  { return parser::token::ATLEAST; }
 
    /* Single character punctuation.  Because a character
     * in C or C++ can be treated as an integer, Bison lets
