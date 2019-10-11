@@ -114,7 +114,7 @@ std::string yyfilename = "What file is this, anyway?";
 std::string string_buf = "";
 
 void yyerror (const std::string &msg, yy::position* where) {
-     std::cout << where << ": " << msg;
+    std::cout << where << ": " << msg;
 }
 
 /* Some long messages that don't fit well in the code below */
@@ -123,9 +123,10 @@ std::string BAD_ESC_MSG =
   "Illegal escape code; only \\\\, \\0, \\t, \\n, \\r, \\n are permitted";
 std::string BAD_NL_STR =
   "Unclosed string?  Encountered newline in quoted string.";
+std::string MLCOMMENT_FILE_END =
+  "Multi lined comments need to end before EOF";
 
-
-#line 43 "quack.lxx"
+#line 44 "quack.lxx"
 /* You'll probably want scanner states for both multi-line
    * comments and for triple-quote strings.  Do comments first,
    * because they're easier (you just throw away the text).  Then
@@ -150,15 +151,15 @@ std::string BAD_NL_STR =
 
 int yy::Lexer::yylex(yy::parser::semantic_type& yylval, yy::location& yylloc)
 {
-  static const char *REGEX_INITIAL = "(?m)(==)|([<]=)|([>]=)|(&&)|(\\|\\|)|(!)|([(-+\\x2d-/:->\\x7b\\x7d])|(class)|(def)|(extends)|(if)|(elif)|(else)|(while)|(return)|(typecase)|([0-9]+)|([^\"\\x5e])|([\\x09\\x0a\\x20]*)|([/][\\x2a])|([A-Za-z]+[0-9A-Za-z]*)|(.)";
+  static const char *REGEX_INITIAL = "(?m)(==)|([<]=)|([>]=)|(&&)|(\\|\\|)|(!)|(class)|(def)|(extends)|(if)|(elif)|(else)|(while)|(return)|(typecase)|([0-9]+)|(\"\"\")|([\"])|([\\x09\\x0a\\x20]*)|([/])|([/][\\x2a])|([A-Z_a-z]+[0-9A-Za-z]*)|([(-/:->\\x7b\\x7d])|(.)";
   static const reflex::Pattern PATTERN_INITIAL(REGEX_INITIAL);
-  static const char *REGEX_comment = "(?m)(\\n)";
+  static const char *REGEX_comment = "(?m)(\\n)|(.)";
   static const reflex::Pattern PATTERN_comment(REGEX_comment);
   static const char *REGEX_mlcomment = "(?m)([^\\x2a]*)|([\\x2a][^/])|([\\x2a][/])";
   static const reflex::Pattern PATTERN_mlcomment(REGEX_mlcomment);
-  static const char *REGEX_S = "(?m)([^\"])|(.)";
+  static const char *REGEX_S = "(?m)([\"])|(\\\\n)|(\\\\t)|(\\\\r)|(\\\\0)|(\\\\\\\\)|(\\\\.)|(\\n)|([^\"])";
   static const reflex::Pattern PATTERN_S(REGEX_S);
-  static const char *REGEX_SSS = "(?m)";
+  static const char *REGEX_SSS = "(?m)(\"\"\")|(\\n)|(.)";
   static const reflex::Pattern PATTERN_SSS(REGEX_SSS);
   if (!has_matcher())
   {
@@ -167,7 +168,7 @@ int yy::Lexer::yylex(yy::parser::semantic_type& yylval, yy::location& yylloc)
   switch (start())
   {
     case INITIAL:
-#line 63 "quack.lxx"
+#line 64 "quack.lxx"
 /* We start with some tokens that are not value-bearing,
    * i.e., the parser needs to know only which token was matched.
    */
@@ -188,7 +189,7 @@ int yy::Lexer::yylex(yy::parser::semantic_type& yylval, yy::location& yylloc)
           case 0:
             if (matcher().at_end())
             {
-#line 146 "quack.lxx"
+#line 163 "quack.lxx"
 { return EOF; }
 
             }
@@ -197,40 +198,36 @@ int yy::Lexer::yylex(yy::parser::semantic_type& yylval, yy::location& yylloc)
               out().put(matcher().input());
             }
             break;
-          case 1: // rule at line 63: ==
-#line 63 "quack.lxx"
+          case 1: // rule at line 64: ==
+#line 64 "quack.lxx"
 { return parser::token::EQUALS; }
             break;
-          case 2: // rule at line 64: [<]=
-#line 64 "quack.lxx"
+          case 2: // rule at line 65: [<]=
+#line 65 "quack.lxx"
 { return parser::token::ATMOST; }
             break;
-          case 3: // rule at line 65: [>]=
-#line 65 "quack.lxx"
+          case 3: // rule at line 66: [>]=
+#line 66 "quack.lxx"
 { return parser::token::ATLEAST; }
             break;
-          case 4: // rule at line 66: &&
-#line 66 "quack.lxx"
+          case 4: // rule at line 67: &&
+#line 67 "quack.lxx"
 { return parser::token::AND; }
             break;
-          case 5: // rule at line 67: \|\|
-#line 67 "quack.lxx"
+          case 5: // rule at line 68: \|\|
+#line 68 "quack.lxx"
 { return parser::token::OR; }
             break;
-          case 6: // rule at line 68: !
-#line 68 "quack.lxx"
+          case 6: // rule at line 69: !
+#line 69 "quack.lxx"
 { return parser::token::NOT; }
 
-   /* Single character punctuation.  Because a character
+    /* Single character punctuation.  Because a character
     * in C or C++ can be treated as an integer, Bison lets
     * us return a character as a token.
     * JFlex/Cup do not let you do this in Java.
     * Here are a few ... there are more.
     */
-            break;
-          case 7: // rule at line 76: [(-+\x2d-/:->\x7b\x7d]
-#line 76 "quack.lxx"
-{ return text()[0]; }
 
   /* Keywords are essentially another kind of punctuation,
    * but since they also match the identifier pattern, we
@@ -242,39 +239,39 @@ int yy::Lexer::yylex(yy::parser::semantic_type& yylval, yy::location& yylloc)
    */
 
             break;
-          case 8: // rule at line 87: class
+          case 7: // rule at line 87: class
 #line 87 "quack.lxx"
 { return parser::token::CLASS; }
             break;
-          case 9: // rule at line 88: def
+          case 8: // rule at line 88: def
 #line 88 "quack.lxx"
 { return parser::token::DEF; }
             break;
-          case 10: // rule at line 89: extends
+          case 9: // rule at line 89: extends
 #line 89 "quack.lxx"
 { return parser::token::EXTENDS; }
             break;
-          case 11: // rule at line 90: if
+          case 10: // rule at line 90: if
 #line 90 "quack.lxx"
 { return parser::token::IF; }
             break;
-          case 12: // rule at line 91: elif
+          case 11: // rule at line 91: elif
 #line 91 "quack.lxx"
 { return parser::token::ELIF; }
             break;
-          case 13: // rule at line 92: else
+          case 12: // rule at line 92: else
 #line 92 "quack.lxx"
 { return parser::token::ELSE; }
             break;
-          case 14: // rule at line 93: while
+          case 13: // rule at line 93: while
 #line 93 "quack.lxx"
 { return parser::token::WHILE; }
             break;
-          case 15: // rule at line 94: return
+          case 14: // rule at line 94: return
 #line 94 "quack.lxx"
 { return parser::token::RETURN; }
             break;
-          case 16: // rule at line 95: typecase
+          case 15: // rule at line 95: typecase
 #line 95 "quack.lxx"
 { return parser::token::TYPECASE; }
 
@@ -293,32 +290,46 @@ int yy::Lexer::yylex(yy::parser::semantic_type& yylval, yy::location& yylloc)
     */
 
             break;
-          case 17: // rule at line 111: [0-9]+
+          case 16: // rule at line 111: [0-9]+
 #line 111 "quack.lxx"
 { yylval.num = atoi(text()); return parser::token::INT_LIT; }
+
             break;
-          case 18: // rule at line 112: [^"\x5e]
-#line 112 "quack.lxx"
+          case 17: // rule at line 113: """
+#line 113 "quack.lxx"
+{ start(SSS); }
+            break;
+          case 18: // rule at line 118: ["]
+#line 118 "quack.lxx"
 { start(S); }
             break;
-          case 19: // rule at line 125: [\x09\x0a\x20]*
-#line 125 "quack.lxx"
+          case 19: // rule at line 138: [\x09\x0a\x20]*
+#line 138 "quack.lxx"
 { ; }
 
    /* Single-line comments */
             break;
-          case 20: // rule at line 132: [/][\x2a]
-#line 132 "quack.lxx"
+          case 20: // rule at line 141: [/]
+#line 141 "quack.lxx"
+{ start(comment); }
+            break;
+          case 21: // rule at line 146: [/][\x2a]
+#line 146 "quack.lxx"
 { start(mlcomment); }
             break;
-          case 21: // rule at line 138: [A-Za-z]+[0-9A-Za-z]*
-#line 138 "quack.lxx"
+          case 22: // rule at line 153: [A-Z_a-z]+[0-9A-Za-z]*
+#line 153 "quack.lxx"
 { return parser::token::IDENT; }
+
+            break;
+          case 23: // rule at line 155: [(-/:->\x7b\x7d]
+#line 155 "quack.lxx"
+{ return text()[0]; }
 
    /* Non-Identifier, punctuation, or numeric character */
             break;
-          case 22: // rule at line 141: .
-#line 141 "quack.lxx"
+          case 24: // rule at line 158: .
+#line 158 "quack.lxx"
 {   report::error("Unexpected character '" + std::string(text()) + "'" +
        " at line " + std::to_string(lineno()) +
        ", column " + std::to_string(columno()));
@@ -336,7 +347,7 @@ int yy::Lexer::yylex(yy::parser::semantic_type& yylval, yy::location& yylloc)
           case 0:
             if (matcher().at_end())
             {
-#line 146 "quack.lxx"
+#line 163 "quack.lxx"
 { return EOF; }
 
             }
@@ -345,9 +356,13 @@ int yy::Lexer::yylex(yy::parser::semantic_type& yylval, yy::location& yylloc)
               out().put(matcher().input());
             }
             break;
-          case 1: // rule at line 129: \n
-#line 129 "quack.lxx"
+          case 1: // rule at line 142: \n
+#line 142 "quack.lxx"
 {start(INITIAL); }
+            break;
+          case 2: // rule at line 143: .
+#line 143 "quack.lxx"
+{ ; }
 
    /* Multi-line comments */
             break;
@@ -362,28 +377,27 @@ int yy::Lexer::yylex(yy::parser::semantic_type& yylval, yy::location& yylloc)
           case 0:
             if (matcher().at_end())
             {
-#line 146 "quack.lxx"
-{ return EOF; }
+#line 150 "quack.lxx"
+{ yyerror(MLCOMMENT_FILE_END, new position(&yyfilename, lineno(), columno())); }
 
+   /* Identifiers */
             }
             else
             {
               out().put(matcher().input());
             }
             break;
-          case 1: // rule at line 133: [^\x2a]*
-#line 133 "quack.lxx"
+          case 1: // rule at line 147: [^\x2a]*
+#line 147 "quack.lxx"
 { ; }
             break;
-          case 2: // rule at line 134: [\x2a][^/]
-#line 134 "quack.lxx"
+          case 2: // rule at line 148: [\x2a][^/]
+#line 148 "quack.lxx"
 { ; }
             break;
-          case 3: // rule at line 135: [\x2a][/]
-#line 135 "quack.lxx"
+          case 3: // rule at line 149: [\x2a][/]
+#line 149 "quack.lxx"
 { start(INITIAL); }
-
-   /* Identifiers */
             break;
         }
         break;
@@ -396,7 +410,7 @@ int yy::Lexer::yylex(yy::parser::semantic_type& yylval, yy::location& yylloc)
           case 0:
             if (matcher().at_end())
             {
-#line 146 "quack.lxx"
+#line 163 "quack.lxx"
 { return EOF; }
 
             }
@@ -405,13 +419,41 @@ int yy::Lexer::yylex(yy::parser::semantic_type& yylval, yy::location& yylloc)
               out().put(matcher().input());
             }
             break;
-          case 1: // rule at line 113: [^"]
-#line 113 "quack.lxx"
-{ start(INITIAL); yylval.str = strdup(string_buf.append(text()).c_str()); string_buf.clear(); return parser::token::STRING_LIT; }
+          case 1: // rule at line 119: ["]
+#line 119 "quack.lxx"
+{ start(INITIAL); yylval.str = strdup(string_buf.append(str()).c_str()); string_buf.clear(); return parser::token::STRING_LIT; }
             break;
-          case 2: // rule at line 114: .
-#line 114 "quack.lxx"
-{ string_buf.append(text()); }
+          case 2: // rule at line 120: \\n
+#line 120 "quack.lxx"
+{string_buf.append("\n"); }
+            break;
+          case 3: // rule at line 121: \\t
+#line 121 "quack.lxx"
+{string_buf.append("\t"); }
+            break;
+          case 4: // rule at line 122: \\r
+#line 122 "quack.lxx"
+{string_buf.append("\r"); }
+            break;
+          case 5: // rule at line 123: \\0
+#line 123 "quack.lxx"
+{string_buf.append("\0"); }
+            break;
+          case 6: // rule at line 124: \\\\
+#line 124 "quack.lxx"
+{string_buf.append("\\"); }
+            break;
+          case 7: // rule at line 125: \\.
+#line 125 "quack.lxx"
+{yyerror(BAD_ESC_MSG, new position(&yyfilename, lineno(), columno())); }
+            break;
+          case 8: // rule at line 126: \n
+#line 126 "quack.lxx"
+{ yyerror(BAD_NL_STR, new position(&yyfilename, lineno(), columno())); start(INITIAL); }
+            break;
+          case 9: // rule at line 127: [^"]
+#line 127 "quack.lxx"
+{ ; }
 
    /* You *can* write a one-line regular expression for matching a quoted string,
    * but you probably can't read it.  (I can't read mine.)  Scanner states and
@@ -434,7 +476,7 @@ int yy::Lexer::yylex(yy::parser::semantic_type& yylval, yy::location& yylloc)
           case 0:
             if (matcher().at_end())
             {
-#line 146 "quack.lxx"
+#line 163 "quack.lxx"
 { return EOF; }
 
             }
@@ -442,6 +484,19 @@ int yy::Lexer::yylex(yy::parser::semantic_type& yylval, yy::location& yylloc)
             {
               out().put(matcher().input());
             }
+            break;
+          case 1: // rule at line 114: """
+#line 114 "quack.lxx"
+{ yylval.str = strdup(string_buf.append(str()).c_str()); start(INITIAL); return parser::token::STRING_LIT; }
+            break;
+          case 2: // rule at line 115: \n
+#line 115 "quack.lxx"
+{ string_buf.append(text()); }
+            break;
+          case 3: // rule at line 116: .
+#line 116 "quack.lxx"
+{ string_buf.append(text()); }
+
             break;
         }
         break;
@@ -457,7 +512,7 @@ int yy::Lexer::yylex(yy::parser::semantic_type& yylval, yy::location& yylloc)
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-#line 149 "quack.lxx"
+#line 166 "quack.lxx"
 
 /* No main program here */
 
