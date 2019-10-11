@@ -111,7 +111,7 @@ typecase { return parser::token::TYPECASE; }
 [0-9]+                   { yylval.num = atoi(text()); return parser::token::INT_LIT; }
 
 \"\"\"	   { start(SSS); }
-<SSS> \"\"\" { yylval.str = strdup(string_buf.append(str()).c_str()); start(INITIAL); return parser::token::STRING_LIT; }
+<SSS> \"\"\" { yylval.str = strdup(string_buf.append(str()).c_str()); string_buf.clear(); start(INITIAL); return parser::token::STRING_LIT; }
 <SSS>\n { string_buf.append(text()); }
 <SSS>. { string_buf.append(text()); }
 
