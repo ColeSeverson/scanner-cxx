@@ -50,9 +50,9 @@ std::string BAD_NL_STR =
    */ 
 %x comment
 %x mlcomment
-%x QQQ
-%x qqq
 
+%x S
+%x SSS
 %%
 
   /* We start with some tokens that are not value-bearing,
@@ -109,8 +109,11 @@ typecase { return parser::token::TYPECASE; }
     */
 
 [0-9]+                   { yylval.num = atoi(text()); return parser::token::INT_LIT; }
+[^""^"]	 { start(S); }
+<S>[^\"] { start(INITIAL); yylval.str = strdup(string_buf.append(text()).c_str()); string_buf.clear(); return parser::token::STRING_LIT; }
+<S>.	 { string_buf.append(text()); }  
 
-  /* You *can* write a one-line regular expression for matching a quoted string,
+   /* You *can* write a one-line regular expression for matching a quoted string,
    * but you probably can't read it.  (I can't read mine.)  Scanner states and
    * simpler patterns are probably a better idea.
    * You almost certainly scanner states for triple quotes.
@@ -120,22 +123,16 @@ typecase { return parser::token::TYPECASE; }
 
   /* Ignore whitespace */
 [ \t\n]*  { ; }
+ 
+   /* Single-line comments */
+// { start(comment); }
+<comment>\n {start(INITIAL); }
 
    /* Multi-line comments */ 
 [/][*]  { start(mlcomment); }
 <mlcomment>[^*]*   { ; }
 <mlcomment>[*][^/] { ; }
 <mlcomment>[*][/]  { start(INITIAL); }
-  
- /* Single-line comments */
-[//] { start(comment); }
-<comment>[\n] {start(INITIAL); }
-
-   /* Triple quoted comments */
-["""] { start(QQQ); }
-<QQQ>["""] { start(INITIAL); }
-['''] { start(qqq); }
-<qqq>['''] {start(INITIAL); }
 
    /* Identifiers */
 [a-zA-Z]+[a-zA-Z0-9]* { return parser::token::IDENT; }
