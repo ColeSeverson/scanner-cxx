@@ -30,11 +30,11 @@ void yyerror (const std::string &msg, yy::position* where) {
 /* Some long messages that don't fit well in the code below */
 
 std::string BAD_ESC_MSG =
-  "Illegal escape code; only \\\\, \\0, \\t, \\n, \\r, \\n are permitted";
+  "Illegal escape code; only \\\\, \\0, \\t, \\n, \\r, \\n are permitted\n";
 std::string BAD_NL_STR =
-  "Unclosed string?  Encountered newline in quoted string."; 
+  "Unclosed string?  Encountered newline in quoted string.\n"; 
 std::string MLCOMMENT_FILE_END =
-  "Multi lined comments need to end before EOF";
+  "Multi lined comments need to end before EOF\n";
 %}
 
 
@@ -123,7 +123,7 @@ typecase { return parser::token::TYPECASE; }
 <S>\\0 {string_buf.append("\0"); }
 <S>\\\\ {string_buf.append("\\"); }
 <S>\\. {yyerror(BAD_ESC_MSG, new position(&yyfilename, lineno(), columno())); }
-<S> \n { yyerror(BAD_NL_STR, new position(&yyfilename, lineno(), columno())); start(INITIAL); }
+<S> \n { yyerror(BAD_NL_STR, new position(&yyfilename, lineno(), columno())); yylval.str = strdup(string_buf.append(str()).c_str()); start(INITIAL); return parser::token::STRING_LIT;}
 <S>[^"] { ; }
 
    /* You *can* write a one-line regular expression for matching a quoted string,

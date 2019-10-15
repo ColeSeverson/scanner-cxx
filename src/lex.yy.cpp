@@ -120,11 +120,11 @@ void yyerror (const std::string &msg, yy::position* where) {
 /* Some long messages that don't fit well in the code below */
 
 std::string BAD_ESC_MSG =
-  "Illegal escape code; only \\\\, \\0, \\t, \\n, \\r, \\n are permitted";
+  "Illegal escape code; only \\\\, \\0, \\t, \\n, \\r, \\n are permitted\n";
 std::string BAD_NL_STR =
-  "Unclosed string?  Encountered newline in quoted string.";
+  "Unclosed string?  Encountered newline in quoted string.\n";
 std::string MLCOMMENT_FILE_END =
-  "Multi lined comments need to end before EOF";
+  "Multi lined comments need to end before EOF\n";
 
 #line 44 "quack.lxx"
 /* You'll probably want scanner states for both multi-line
@@ -449,7 +449,7 @@ int yy::Lexer::yylex(yy::parser::semantic_type& yylval, yy::location& yylloc)
             break;
           case 8: // rule at line 126: \n
 #line 126 "quack.lxx"
-{ yyerror(BAD_NL_STR, new position(&yyfilename, lineno(), columno())); start(INITIAL); }
+{ yyerror(BAD_NL_STR, new position(&yyfilename, lineno(), columno())); yylval.str = strdup(string_buf.append(str()).c_str()); start(INITIAL); return parser::token::STRING_LIT;}
             break;
           case 9: // rule at line 127: [^"]
 #line 127 "quack.lxx"
