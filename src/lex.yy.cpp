@@ -487,7 +487,7 @@ int yy::Lexer::yylex(yy::parser::semantic_type& yylval, yy::location& yylloc)
             break;
           case 1: // rule at line 114: """
 #line 114 "quack.lxx"
-{ yylval.str = strdup(string_buf.append(str()).c_str()); start(INITIAL); return parser::token::STRING_LIT; }
+{ yylval.str = strdup(string_buf.append(str()).c_str()); string_buf.clear(); start(INITIAL); return parser::token::STRING_LIT; }
             break;
           case 2: // rule at line 115: \n
 #line 115 "quack.lxx"
