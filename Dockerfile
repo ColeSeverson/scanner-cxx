@@ -1,4 +1,4 @@
-# Build a Docker project atop the CIS 461/561 shared platform,
+#Build a Docker project atop the CIS 461/561 shared platform,
 # which is an Ubuntu machine with gcc, build tools including Make,
 # and the RE/flex lexical analyzer builder.
 #
